@@ -161,6 +161,7 @@ set(
   ensemble_scheduler.h
   ensemble_utils.h
   filesystem.h
+  futex_cond_var.h
   infer_parameter.h
   infer_request.h
   infer_response.h

@@ -34,6 +34,7 @@
 #include "model_config.pb.h"
 #include "src/backends/backend/triton_model.h"
 #include "src/backends/backend/triton_model_instance.h"
+#include "src/core/futex_cond_var.h"
 #include "src/core/instance_queue.h"
 #include "src/core/payload.h"
 #include "src/core/status.h"
@@ -297,8 +298,8 @@ class RateLimiter {
     std::unique_ptr<InstanceQueue> queue_;
     std::map<const TritonModelInstance*, std::unique_ptr<InstanceQueue>>
         specific_queues_;
-    std::mutex mu_;
-    std::condition_variable cv_;
+    FutexMutex mu_;
+    FutexConditionVariable cv_;
   };
   std::map<const TritonModel*, std::unique_ptr<PayloadQueue>> payload_queues_;
 };

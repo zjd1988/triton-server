@@ -150,7 +150,7 @@ RateLimiter::PayloadSlotAvailable(const TritonModel* model)
   bool result;
   PayloadQueue* payload_queue = payload_queues_[model].get();
   {
-    std::lock_guard<std::mutex> lk(payload_queue->mu_);
+    std::lock_guard<FutexMutex> lk(payload_queue->mu_);
     result = payload_queue->queue_->Size() <
              2 * payload_queue->specific_queues_.size();
   }
@@ -167,7 +167,7 @@ RateLimiter::EnqueuePayload(
   }
   PayloadQueue* payload_queue = payload_queues_[model].get();
   {
-    std::lock_guard<std::mutex> lk(payload_queue->mu_);
+    std::lock_guard<FutexMutex> lk(payload_queue->mu_);
     payload->SetState(Payload::State::REQUESTED);
     if (pinstance == nullptr) {
       payload_queue->queue_->Enqueue(payload);
@@ -207,7 +207,7 @@ RateLimiter::DequeuePayload(
     std::vector<std::shared_ptr<Payload>> merged_payloads;
     size_t instance_index;
     {
-      std::unique_lock<std::mutex> lk(payload_queue->mu_);
+      std::unique_lock<FutexMutex> lk(payload_queue->mu_);
       payload_queue->cv_.wait(
           lk, [&instances, &instance_index, payload_queue]() {
             bool empty = payload_queue->queue_->Empty();
