@@ -562,6 +562,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # uuid-dev and pkg-config is needed for Azure Storage
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+            ca-certificates \
             autoconf \
             automake \
             build-essential \
