@@ -108,15 +108,15 @@ if [ $? -ne 0 ]; then
     echo -e "Failed: chmod"
     exit 1
 fi
-if [ $(uname -m) == "aarch64" ] ; then
-    bash -xe $HOST_SRCDIR/$TFSCRIPT
-else 
+# if [ $(uname -m) == "aarch64" ] ; then
+#     bash -xe $HOST_SRCDIR/$TFSCRIPT
+# else 
     docker pull $TENSORFLOW_IMAGE
     docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$TFSCRIPT \
         --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
         --mount type=bind,source=$HOST_DESTDIR/tf_custom_ops,target=$DESTDIR \
            $TENSORFLOW_IMAGE
-fi 
+# fi 
 
 if [ $? -ne 0 ]; then
     echo -e "Failed"
