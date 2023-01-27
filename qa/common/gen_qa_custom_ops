@@ -60,8 +60,8 @@ mkdir -p $HOST_SRCDIR
 cp ./gen_qa_custom_ops_models.py $HOST_SRCDIR/.
 cp ./cuda_op_kernel.cu.cc.patch $HOST_SRCDIR/.
 cp ./busy_op_kernel.* $HOST_SRCDIR/.
-TFSCRIPT=tf_gen.cmds
-PYTSCRIPT=pyt_gen.cmds
+TFSCRIPT=tf_gen_custom_ops.cmds
+PYTSCRIPT=pyt_gen_custom_ops.cmds
 
 SRCDIR=/tmp/src
 DESTDIR=/tmp/custom_ops
