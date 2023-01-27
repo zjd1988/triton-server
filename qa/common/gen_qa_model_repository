@@ -240,7 +240,7 @@ if [ $? -ne 0 ]; then
 fi
 
 if [ $(uname -m) == "aarch64" ] ; then
-    echo -e "\033[33mSKIPPING" bash -xe $HOST_SRCDIR/$ONNXSCRIPT
+    echo -e "\033[33mSKIPPING\033[0m" bash -xe $HOST_SRCDIR/$ONNXSCRIPT
 else 
     docker pull $UBUNTU_IMAGE
     docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$OPENVINOSCRIPT \
@@ -314,7 +314,7 @@ if [ $? -ne 0 ]; then
 fi
 
 if [ $(uname -m) == "aarch64" ] ; then
-    echo -e "\033[33mSKIPPING" bash -xe $HOST_SRCDIR/$ONNXSCRIPT
+    echo -e "\033[33mSKIPPING\033[0m" bash -xe $HOST_SRCDIR/$ONNXSCRIPT
 else 
 docker pull $UBUNTU_IMAGE
 docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$ONNXSCRIPT \
@@ -372,7 +372,7 @@ if [ $? -ne 0 ]; then
 fi
 
 if [ $(uname -m) == "aarch64" ] ; then
-     echo -e "\033[33mSKIPPING" bash -xe $HOST_SRCDIR/$TORCHSCRIPT
+     echo -e "\033[33mSKIPPING\033[0m" bash -xe $HOST_SRCDIR/$TORCHSCRIPT
 else 
     docker pull $PYTORCH_IMAGE
     docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$TORCHSCRIPT \
@@ -438,7 +438,7 @@ if [ $? -ne 0 ]; then
 fi
 
 if [ $(uname -m) == "aarch64" ] ; then
-    echo -e "\033[33mSKIPPING" bash -xe $HOST_SRCDIR/$TFSCRIPT
+    echo -e "\033[33mSKIPPING\033[0m" bash -xe $HOST_SRCDIR/$TFSCRIPT
 else 
     docker pull $TENSORFLOW_IMAGE
     docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$TFSCRIPT \
