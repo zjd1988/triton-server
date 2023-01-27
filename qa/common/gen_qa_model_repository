@@ -308,23 +308,23 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-docker pull $UBUNTU_IMAGE
-docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$ONNXSCRIPT \
-       --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
-       --mount type=bind,source=$HOST_DESTDIR,target=$DESTDIR \
-       --mount type=bind,source=$HOST_VARDESTDIR,target=$VARDESTDIR \
-       --mount type=bind,source=$HOST_IDENTITYDESTDIR,target=$IDENTITYDESTDIR \
-       --mount type=bind,source=$HOST_RESHAPEDESTDIR,target=$RESHAPEDESTDIR \
-       --mount type=bind,source=$HOST_SEQDESTDIR,target=$SEQDESTDIR \
-       --mount type=bind,source=$HOST_DYNASEQDESTDIR,target=$DYNASEQDESTDIR \
-       --mount type=bind,source=$HOST_DYNASEQIMPLICITDESTDIR,target=$DYNASEQIMPLICITDESTDIR \
-       --mount type=bind,source=$HOST_VARSEQDESTDIR,target=$VARSEQDESTDIR \
-       --mount type=bind,source=$HOST_RAGGEDDESTDIR,target=$RAGGEDDESTDIR \
-       --mount type=bind,source=$HOST_VARIMPLICITSEQDESTDIR,target=$VARIMPLICITSEQDESTDIR \
-       --mount type=bind,source=$HOST_IMPLICITSEQDESTDIR,target=$IMPLICITSEQDESTDIR \
-       --mount type=bind,source=$HOST_VARINITIALSTATEIMPLICITSEQDESTDIR,target=$VARINITIALSTATEIMPLICITSEQDESTDIR \
-       --mount type=bind,source=$HOST_INITIALSTATEIMPLICITSEQDESTDIR,target=$INITIALSTATEIMPLICITSEQDESTDIR \
-       $UBUNTU_IMAGE
+# docker pull $UBUNTU_IMAGE
+# docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$ONNXSCRIPT \
+#        --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
+#        --mount type=bind,source=$HOST_DESTDIR,target=$DESTDIR \
+#        --mount type=bind,source=$HOST_VARDESTDIR,target=$VARDESTDIR \
+#        --mount type=bind,source=$HOST_IDENTITYDESTDIR,target=$IDENTITYDESTDIR \
+#        --mount type=bind,source=$HOST_RESHAPEDESTDIR,target=$RESHAPEDESTDIR \
+#        --mount type=bind,source=$HOST_SEQDESTDIR,target=$SEQDESTDIR \
+#        --mount type=bind,source=$HOST_DYNASEQDESTDIR,target=$DYNASEQDESTDIR \
+#        --mount type=bind,source=$HOST_DYNASEQIMPLICITDESTDIR,target=$DYNASEQIMPLICITDESTDIR \
+#        --mount type=bind,source=$HOST_VARSEQDESTDIR,target=$VARSEQDESTDIR \
+#        --mount type=bind,source=$HOST_RAGGEDDESTDIR,target=$RAGGEDDESTDIR \
+#        --mount type=bind,source=$HOST_VARIMPLICITSEQDESTDIR,target=$VARIMPLICITSEQDESTDIR \
+#        --mount type=bind,source=$HOST_IMPLICITSEQDESTDIR,target=$IMPLICITSEQDESTDIR \
+#        --mount type=bind,source=$HOST_VARINITIALSTATEIMPLICITSEQDESTDIR,target=$VARINITIALSTATEIMPLICITSEQDESTDIR \
+#        --mount type=bind,source=$HOST_INITIALSTATEIMPLICITSEQDESTDIR,target=$INITIALSTATEIMPLICITSEQDESTDIR \
+#        $UBUNTU_IMAGE
 if [ $? -ne 0 ]; then
     echo -e "Failed"
     exit 1
@@ -361,18 +361,18 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-docker pull $PYTORCH_IMAGE
-docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$TORCHSCRIPT \
-       --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
-       --mount type=bind,source=$HOST_DESTDIR,target=$DESTDIR \
-       --mount type=bind,source=$HOST_VARDESTDIR,target=$VARDESTDIR \
-       --mount type=bind,source=$HOST_IDENTITYDESTDIR,target=$IDENTITYDESTDIR \
-       --mount type=bind,source=$HOST_RESHAPEDESTDIR,target=$RESHAPEDESTDIR \
-       --mount type=bind,source=$HOST_SEQDESTDIR,target=$SEQDESTDIR \
-       --mount type=bind,source=$HOST_DYNASEQDESTDIR,target=$DYNASEQDESTDIR \
-       --mount type=bind,source=$HOST_VARSEQDESTDIR,target=$VARSEQDESTDIR \
-       --mount type=bind,source=$HOST_TORCHTRTDESTDIR,target=$TORCHTRTDESTDIR \
-       $PYTORCH_IMAGE
+# docker pull $PYTORCH_IMAGE
+# docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$TORCHSCRIPT \
+#        --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
+#        --mount type=bind,source=$HOST_DESTDIR,target=$DESTDIR \
+#        --mount type=bind,source=$HOST_VARDESTDIR,target=$VARDESTDIR \
+#        --mount type=bind,source=$HOST_IDENTITYDESTDIR,target=$IDENTITYDESTDIR \
+#        --mount type=bind,source=$HOST_RESHAPEDESTDIR,target=$RESHAPEDESTDIR \
+#        --mount type=bind,source=$HOST_SEQDESTDIR,target=$SEQDESTDIR \
+#        --mount type=bind,source=$HOST_DYNASEQDESTDIR,target=$DYNASEQDESTDIR \
+#        --mount type=bind,source=$HOST_VARSEQDESTDIR,target=$VARSEQDESTDIR \
+#        --mount type=bind,source=$HOST_TORCHTRTDESTDIR,target=$TORCHTRTDESTDIR \
+#        $PYTORCH_IMAGE
 if [ $? -ne 0 ]; then
     echo -e "Failed"
     exit 1
@@ -422,22 +422,22 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-docker pull $TENSORFLOW_IMAGE
-docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$TFSCRIPT \
-       --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
-       --mount type=bind,source=$HOST_DESTDIR,target=$DESTDIR \
-       --mount type=bind,source=$HOST_VARDESTDIR,target=$VARDESTDIR \
-       --mount type=bind,source=$HOST_IDENTITYDESTDIR,target=$IDENTITYDESTDIR \
-       --mount type=bind,source=$HOST_SIGDEFDESTDIR,target=$SIGDEFDESTDIR \
-       --mount type=bind,source=$HOST_RESHAPEDESTDIR,target=$RESHAPEDESTDIR \
-       --mount type=bind,source=$HOST_SEQDESTDIR,target=$SEQDESTDIR \
-       --mount type=bind,source=$HOST_DYNASEQDESTDIR,target=$DYNASEQDESTDIR \
-       --mount type=bind,source=$HOST_VARSEQDESTDIR,target=$VARSEQDESTDIR \
-       --mount type=bind,source=$HOST_NOSHAPEDESTDIR,target=$NOSHAPEDESTDIR \
-       --mount type=bind,source=$HOST_ENSEMBLEDESTDIR,target=$ENSEMBLEDESTDIR \
-       --mount type=bind,source=$HOST_RAGGEDDESTDIR,target=$RAGGEDDESTDIR \
-       --mount type=bind,source=$HOST_TFPARAMETERSDESTDIR,target=$TFPARAMETERSDIR \
-       $TENSORFLOW_IMAGE
+# docker pull $TENSORFLOW_IMAGE
+# docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$TFSCRIPT \
+#        --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
+#        --mount type=bind,source=$HOST_DESTDIR,target=$DESTDIR \
+#        --mount type=bind,source=$HOST_VARDESTDIR,target=$VARDESTDIR \
+#        --mount type=bind,source=$HOST_IDENTITYDESTDIR,target=$IDENTITYDESTDIR \
+#        --mount type=bind,source=$HOST_SIGDEFDESTDIR,target=$SIGDEFDESTDIR \
+#        --mount type=bind,source=$HOST_RESHAPEDESTDIR,target=$RESHAPEDESTDIR \
+#        --mount type=bind,source=$HOST_SEQDESTDIR,target=$SEQDESTDIR \
+#        --mount type=bind,source=$HOST_DYNASEQDESTDIR,target=$DYNASEQDESTDIR \
+#        --mount type=bind,source=$HOST_VARSEQDESTDIR,target=$VARSEQDESTDIR \
+#        --mount type=bind,source=$HOST_NOSHAPEDESTDIR,target=$NOSHAPEDESTDIR \
+#        --mount type=bind,source=$HOST_ENSEMBLEDESTDIR,target=$ENSEMBLEDESTDIR \
+#        --mount type=bind,source=$HOST_RAGGEDDESTDIR,target=$RAGGEDDESTDIR \
+#        --mount type=bind,source=$HOST_TFPARAMETERSDESTDIR,target=$TFPARAMETERSDIR \
+#        $TENSORFLOW_IMAGE
 if [ $? -ne 0 ]; then
     echo -e "Failed"
     exit 1
@@ -501,26 +501,26 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-docker pull $TENSORRT_IMAGE
-docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$TRTSCRIPT \
-       --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
-       --mount type=bind,source=$HOST_DESTDIR,target=$DESTDIR \
-       --mount type=bind,source=$HOST_VARDESTDIR,target=$VARDESTDIR \
-       --mount type=bind,source=$HOST_IDENTITYDESTDIR,target=$IDENTITYDESTDIR \
-       --mount type=bind,source=$HOST_IDENTITYBIGDESTDIR,target=$IDENTITYBIGDESTDIR \
-       --mount type=bind,source=$HOST_SHAPEDESTDIR,target=$SHAPEDESTDIR \
-       --mount type=bind,source=$HOST_RESHAPEDESTDIR,target=$RESHAPEDESTDIR \
-       --mount type=bind,source=$HOST_SEQDESTDIR,target=$SEQDESTDIR \
-       --mount type=bind,source=$HOST_DYNASEQDESTDIR,target=$DYNASEQDESTDIR \
-       --mount type=bind,source=$HOST_VARSEQDESTDIR,target=$VARSEQDESTDIR \
-       --mount type=bind,source=$HOST_PLGDESTDIR,target=$PLGDESTDIR \
-       --mount type=bind,source=$HOST_RAGGEDDESTDIR,target=$RAGGEDDESTDIR \
-       --mount type=bind,source=$HOST_FORMATDESTDIR,target=$FORMATDESTDIR \
-       --mount type=bind,source=$HOST_DATADEPENDENTDIR,target=$DATADEPENDENTDIR \
-       --mount type=bind,source=$HOST_VARIMPLICITSEQDESTDIR,target=$VARIMPLICITSEQDESTDIR \
-       --mount type=bind,source=$HOST_DYNASEQIMPLICITDESTDIR,target=$DYNASEQIMPLICITDESTDIR \
-       --mount type=bind,source=$HOST_IMPLICITSEQDESTDIR,target=$IMPLICITSEQDESTDIR \
-       $TENSORRT_IMAGE
+# docker pull $TENSORRT_IMAGE
+# docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$TRTSCRIPT \
+#        --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
+#        --mount type=bind,source=$HOST_DESTDIR,target=$DESTDIR \
+#        --mount type=bind,source=$HOST_VARDESTDIR,target=$VARDESTDIR \
+#        --mount type=bind,source=$HOST_IDENTITYDESTDIR,target=$IDENTITYDESTDIR \
+#        --mount type=bind,source=$HOST_IDENTITYBIGDESTDIR,target=$IDENTITYBIGDESTDIR \
+#        --mount type=bind,source=$HOST_SHAPEDESTDIR,target=$SHAPEDESTDIR \
+#        --mount type=bind,source=$HOST_RESHAPEDESTDIR,target=$RESHAPEDESTDIR \
+#        --mount type=bind,source=$HOST_SEQDESTDIR,target=$SEQDESTDIR \
+#        --mount type=bind,source=$HOST_DYNASEQDESTDIR,target=$DYNASEQDESTDIR \
+#        --mount type=bind,source=$HOST_VARSEQDESTDIR,target=$VARSEQDESTDIR \
+#        --mount type=bind,source=$HOST_PLGDESTDIR,target=$PLGDESTDIR \
+#        --mount type=bind,source=$HOST_RAGGEDDESTDIR,target=$RAGGEDDESTDIR \
+#        --mount type=bind,source=$HOST_FORMATDESTDIR,target=$FORMATDESTDIR \
+#        --mount type=bind,source=$HOST_DATADEPENDENTDIR,target=$DATADEPENDENTDIR \
+#        --mount type=bind,source=$HOST_VARIMPLICITSEQDESTDIR,target=$VARIMPLICITSEQDESTDIR \
+#        --mount type=bind,source=$HOST_DYNASEQIMPLICITDESTDIR,target=$DYNASEQIMPLICITDESTDIR \
+#        --mount type=bind,source=$HOST_IMPLICITSEQDESTDIR,target=$IMPLICITSEQDESTDIR \
+#        $TENSORRT_IMAGE
 if [ $? -ne 0 ]; then
     echo -e "Failed"
     exit 1
