@@ -108,12 +108,16 @@ if [ $? -ne 0 ]; then
     echo -e "Failed: chmod"
     exit 1
 fi
+if [ $(uname -m) == "aarch64" ] ; then
+    bash -xe $HOST_SRCDIR/$TORCHSCRIPT
+else 
+    docker pull $TENSORFLOW_IMAGE
+    docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$TFSCRIPT \
+        --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
+        --mount type=bind,source=$HOST_DESTDIR/tf_custom_ops,target=$DESTDIR \
+           $TENSORFLOW_IMAGE
+fi 
 
-# docker pull $TENSORFLOW_IMAGE
-# docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$TFSCRIPT \
-#        --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
-#        --mount type=bind,source=$HOST_DESTDIR/tf_custom_ops,target=$DESTDIR \
-#        $TENSORFLOW_IMAGE
 if [ $? -ne 0 ]; then
     echo -e "Failed"
     exit 1
@@ -136,11 +140,15 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# docker pull $PYTORCH_IMAGE
-# docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$PYTSCRIPT \
-#        --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
-#        --mount type=bind,source=$HOST_DESTDIR/libtorch_custom_ops,target=$DESTDIR \
-#        $PYTORCH_IMAGE
+if [ $(uname -m) == "aarch64" ] ; then
+    bash -xe $HOST_SRCDIR/$TORCHSCRIPT
+else 
+    docker pull $PYTORCH_IMAGE
+    docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$PYTSCRIPT \
+        --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
+        --mount type=bind,source=$HOST_DESTDIR/libtorch_custom_ops,target=$DESTDIR \
+        $PYTORCH_IMAGE
+fi
 if [ $? -ne 0 ]; then
     echo -e "Failed"
     exit 1
