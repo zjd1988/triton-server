@@ -362,7 +362,7 @@ if [ $? -ne 0 ]; then
 fi
 
 if [ $(uname -m) == "aarch64" ] ; then
-    echo SKIPPED bash -xe $HOST_SRCDIR/$TORCHSCRIPT
+     bash -xe $HOST_SRCDIR/$TORCHSCRIPT
 else 
     docker pull $PYTORCH_IMAGE
     docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$TORCHSCRIPT \
