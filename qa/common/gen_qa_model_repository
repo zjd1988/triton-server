@@ -239,18 +239,23 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-docker pull $UBUNTU_IMAGE
-docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$OPENVINOSCRIPT \
-       --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
-       --mount type=bind,source=$HOST_DESTDIR,target=$DESTDIR \
-       --mount type=bind,source=$HOST_VARDESTDIR,target=$VARDESTDIR \
-       --mount type=bind,source=$HOST_IDENTITYDESTDIR,target=$IDENTITYDESTDIR \
-       --mount type=bind,source=$HOST_RESHAPEDESTDIR,target=$RESHAPEDESTDIR \
-       --mount type=bind,source=$HOST_SEQDESTDIR,target=$SEQDESTDIR \
-       --mount type=bind,source=$HOST_DYNASEQDESTDIR,target=$DYNASEQDESTDIR \
-       --mount type=bind,source=$HOST_VARSEQDESTDIR,target=$VARSEQDESTDIR \
-       --mount type=bind,source=$HOST_RAGGEDDESTDIR,target=$RAGGEDDESTDIR \
-       $UBUNTU_IMAGE
+if [ $(uname -m) == "aarch64" ] ; then
+    echo -e "\033[33mSKIPPING" bash -xe $HOST_SRCDIR/$ONNXSCRIPT
+else 
+    docker pull $UBUNTU_IMAGE
+    docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$OPENVINOSCRIPT \
+        --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
+        --mount type=bind,source=$HOST_DESTDIR,target=$DESTDIR \
+        --mount type=bind,source=$HOST_VARDESTDIR,target=$VARDESTDIR \
+        --mount type=bind,source=$HOST_IDENTITYDESTDIR,target=$IDENTITYDESTDIR \
+        --mount type=bind,source=$HOST_RESHAPEDESTDIR,target=$RESHAPEDESTDIR \
+        --mount type=bind,source=$HOST_SEQDESTDIR,target=$SEQDESTDIR \
+        --mount type=bind,source=$HOST_DYNASEQDESTDIR,target=$DYNASEQDESTDIR \
+        --mount type=bind,source=$HOST_VARSEQDESTDIR,target=$VARSEQDESTDIR \
+        --mount type=bind,source=$HOST_RAGGEDDESTDIR,target=$RAGGEDDESTDIR \
+        $UBUNTU_IMAGE
+fi
+
 if [ $? -ne 0 ]; then
     echo -e "Failed"
     exit 1
@@ -308,6 +313,9 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+if [ $(uname -m) == "aarch64" ] ; then
+    echo -e "\033[33mSKIPPING" bash -xe $HOST_SRCDIR/$ONNXSCRIPT
+else 
 docker pull $UBUNTU_IMAGE
 docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$ONNXSCRIPT \
        --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
@@ -325,6 +333,8 @@ docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$ONNXSCRIPT \
        --mount type=bind,source=$HOST_VARINITIALSTATEIMPLICITSEQDESTDIR,target=$VARINITIALSTATEIMPLICITSEQDESTDIR \
        --mount type=bind,source=$HOST_INITIALSTATEIMPLICITSEQDESTDIR,target=$INITIALSTATEIMPLICITSEQDESTDIR \
        $UBUNTU_IMAGE
+fi
+
 if [ $? -ne 0 ]; then
     echo -e "Failed"
     exit 1
@@ -362,7 +372,7 @@ if [ $? -ne 0 ]; then
 fi
 
 if [ $(uname -m) == "aarch64" ] ; then
-     bash -xe $HOST_SRCDIR/$TORCHSCRIPT
+     echo -e "\033[33mSKIPPING" bash -xe $HOST_SRCDIR/$TORCHSCRIPT
 else 
     docker pull $PYTORCH_IMAGE
     docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$TORCHSCRIPT \
@@ -428,7 +438,7 @@ if [ $? -ne 0 ]; then
 fi
 
 if [ $(uname -m) == "aarch64" ] ; then
-    bash -xe $HOST_SRCDIR/$TFSCRIPT
+    echo -e "\033[33mSKIPPING" bash -xe $HOST_SRCDIR/$TFSCRIPT
 else 
     docker pull $TENSORFLOW_IMAGE
     docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$TFSCRIPT \
