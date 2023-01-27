@@ -70,7 +70,7 @@ DESTDIR=/tmp/custom_ops
 # Set compilation option by "Select a particular C++ dialect." 
 [[ "${NVIDIA_UPSTREAM_VERSION}" < "22.10"  ]] && STD_FLAG="c++14" || STD_FLAG="c++17"
 
-$ARCH=$(uname -m)
+ARCH=$(uname -m)
 
 cat >$HOST_SRCDIR/$TFSCRIPT <<EOF
 #!/bin/bash -x
