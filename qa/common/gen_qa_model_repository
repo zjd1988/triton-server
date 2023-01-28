@@ -508,7 +508,7 @@ chmod -R 777 $DATADEPENDENTDIR
 # FIXME: [DLIS-4138] Once TensorRT uploads a new custom sample plugin they maintain, we should switch to
 # that one. This uses the provided plugin code from Release 8.4. This could break when TensorRT makes 
 # changes to their plugin code.
-if [ $(uname -m) == "aarch64" ] ; then
+if [ $(uname -m) != "aarch64" ] ; then
     (git clone -b release/8.4 https://github.com/NVIDIA/TensorRT.git && \
     cd /tmp/TensorRT/samples/python/uff_custom_plugin && cmake . && make && \
     cp libclipplugin.so $PLGDESTDIR/.)
