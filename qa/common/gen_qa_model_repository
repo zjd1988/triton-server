@@ -472,38 +472,38 @@ set -e
 set -x
 export TRT_SUPPRESS_DEPRECATION_WARNINGS=1
 # Models using shape tensor i/o
-python3 $SRCDIR/gen_qa_identity_models.py --tensorrt-shape-io --models_dir=$SHAPEDESTDIR
-python3 $SRCDIR/gen_qa_sequence_models.py --tensorrt-shape-io --models_dir=$SHAPEDESTDIR
-python3 $SRCDIR/gen_qa_dyna_sequence_models.py --tensorrt-shape-io --models_dir=$SHAPEDESTDIR
-chmod -R 777 $SHAPEDESTDIR
-python3 $SRCDIR/gen_qa_models.py --tensorrt --models_dir=$DESTDIR
-chmod -R 777 $DESTDIR
-python3 $SRCDIR/gen_qa_models.py --tensorrt --variable --models_dir=$VARDESTDIR
-chmod -R 777 $VARDESTDIR
-python3 $SRCDIR/gen_qa_identity_models.py --tensorrt --models_dir=$IDENTITYDESTDIR
-chmod -R 777 $IDENTITYDESTDIR
-python3 $SRCDIR/gen_qa_identity_models.py --tensorrt-big --models_dir=$IDENTITYBIGDESTDIR
-chmod -R 777 $IDENTITYBIGDESTDIR
-python3 $SRCDIR/gen_qa_reshape_models.py --tensorrt --variable --models_dir=$RESHAPEDESTDIR
-chmod -R 777 $RESHAPEDESTDIR
-python3 $SRCDIR/gen_qa_sequence_models.py --tensorrt --models_dir=$SEQDESTDIR
-chmod -R 777 $SEQDESTDIR
-python3 $SRCDIR/gen_qa_implicit_models.py --tensorrt --models_dir=$IMPLICITSEQDESTDIR
-chmod -R 777 $IMPLICITSEQDESTDIR
-python3 $SRCDIR/gen_qa_implicit_models.py --tensorrt --variable --models_dir=$VARIMPLICITSEQDESTDIR
-chmod -R 777 $VARIMPLICITSEQDESTDIR
-python3 $SRCDIR/gen_qa_dyna_sequence_models.py --tensorrt --models_dir=$DYNASEQDESTDIR
-chmod -R 777 $DYNASEQDESTDIR
-python3 $SRCDIR/gen_qa_sequence_models.py --tensorrt --variable --models_dir=$VARSEQDESTDIR
-chmod -R 777 $VARSEQDESTDIR
-python3 $SRCDIR/gen_qa_dyna_sequence_implicit_models.py --tensorrt --models_dir=$DYNASEQIMPLICITDESTDIR
-chmod -R 777 $DYNASEQIMPLICITDESTDIR
-python3 $SRCDIR/gen_qa_ragged_models.py --tensorrt --models_dir=$RAGGEDDESTDIR
-chmod -R 777 $RAGGEDDESTDIR
-python3 $SRCDIR/gen_qa_trt_format_models.py --models_dir=$FORMATDESTDIR
-chmod -R 777 $FORMATDESTDIR
-python3 $SRCDIR/gen_qa_trt_data_dependent_shape.py --models_dir=$DATADEPENDENTDIR
-chmod -R 777 $DATADEPENDENTDIR
+python3 $SRCDIR/gen_qa_identity_models.py --tensorrt-shape-io --models_dir=$HOST_SHAPEDESTDIR
+python3 $SRCDIR/gen_qa_sequence_models.py --tensorrt-shape-io --models_dir=$HOST_SHAPEDESTDIR
+python3 $SRCDIR/gen_qa_dyna_sequence_models.py --tensorrt-shape-io --models_dir=$HOST_SHAPEDESTDIR
+chmod -R 777 $HOST_SHAPEDESTDIR
+python3 $SRCDIR/gen_qa_models.py --tensorrt --models_dir=$HOST_DESTDIR
+chmod -R 777 $HOST_DESTDIR
+python3 $SRCDIR/gen_qa_models.py --tensorrt --variable --models_dir=$HOST_VARDESTDIR
+chmod -R 777 $HOST_VARDESTDIR
+python3 $SRCDIR/gen_qa_identity_models.py --tensorrt --models_dir=$HOST_IDENTITYDESTDIR
+chmod -R 777 $HOST_IDENTITYDESTDIR
+python3 $SRCDIR/gen_qa_identity_models.py --tensorrt-big --models_dir=$HOST_IDENTITYBIGDESTDIR
+chmod -R 777 $HOST_IDENTITYBIGDESTDIR
+python3 $SRCDIR/gen_qa_reshape_models.py --tensorrt --variable --models_dir=$HOST_RESHAPEDESTDIR
+chmod -R 777 $HOST_RESHAPEDESTDIR
+python3 $SRCDIR/gen_qa_sequence_models.py --tensorrt --models_dir=$HOST_SEQDESTDIR
+chmod -R 777 $HOST_SEQDESTDIR
+python3 $SRCDIR/gen_qa_implicit_models.py --tensorrt --models_dir=$HOST_IMPLICITSEQDESTDIR
+chmod -R 777 $HOST_IMPLICITSEQDESTDIR
+python3 $SRCDIR/gen_qa_implicit_models.py --tensorrt --variable --models_dir=$HOST_VARIMPLICITSEQDESTDIR
+chmod -R 777 $HOST_VARIMPLICITSEQDESTDIR
+python3 $SRCDIR/gen_qa_dyna_sequence_models.py --tensorrt --models_dir=$HOST_DYNASEQDESTDIR
+chmod -R 777 $HOST_DYNASEQDESTDIR
+python3 $SRCDIR/gen_qa_sequence_models.py --tensorrt --variable --models_dir=$HOST_VARSEQDESTDIR
+chmod -R 777 $HOST_VARSEQDESTDIR
+python3 $SRCDIR/gen_qa_dyna_sequence_implicit_models.py --tensorrt --models_dir=$HOST_DYNASEQIMPLICITDESTDIR
+chmod -R 777 $HOST_DYNASEQIMPLICITDESTDIR
+python3 $SRCDIR/gen_qa_ragged_models.py --tensorrt --models_dir=$HOST_RAGGEDDESTDIR
+chmod -R 777 $HOST_RAGGEDDESTDIR
+python3 $SRCDIR/gen_qa_trt_format_models.py --models_dir=$HOST_FORMATDESTDIR
+chmod -R 777 $HOST_FORMATDESTDIR
+python3 $SRCDIR/gen_qa_trt_data_dependent_shape.py --models_dir=$HOST_DATADEPENDENTDIR
+chmod -R 777 $HOST_DATADEPENDENTDIR
 # Make shared library for custom clip plugin.
 # FIXME: [DLIS-4138] Once TensorRT uploads a new custom sample plugin they maintain, we should switch to
 # that one. This uses the provided plugin code from Release 8.4. This could break when TensorRT makes 
@@ -524,23 +524,6 @@ if [ $? -ne 0 ]; then
 fi
 if [ $(uname -m) == "aarch64" ] ; then
     bash -xe $HOST_SRCDIR/$TRTSCRIPT
-    mv -f $SRCDIR/* $HOST_SRCDIR
-    mv -f $DESTDIR/* $HOST_DESTDIR
-    mv -f $VARDESTDIR/* $HOST_VARDESTDIR
-    mv -f $IDENTITYDESTDIR/* $HOST_IDENTITYDESTDIR
-    mv -f $IDENTITYBIGDESTDIR/* $HOST_IDENTITYBIGDESTDIR
-    mv -f $SHAPEDESTDIR/* $HOST_SHAPEDESTDIR 
-    mv -f $RESHAPEDESTDIR/* $HOST_RESHAPEDESTDIR  
-    mv -f $SEQDESTDIR/* $HOST_SEQDESTDIR 
-    mv -f $DYNASEQDESTDIR/* $HOST_DYNASEQDESTDIR 
-    mv -f $VARSEQDESTDIR/* $HOST_VARSEQDESTDIR 
-    # mv -f $PLGDESTDIR/* $HOST_PLGDESTDIR 
-    mv -f $RAGGEDDESTDIR/* $HOST_RAGGEDDESTDIR 
-    mv -f $FORMATDESTDIR/* $HOST_FORMATDESTDIR 
-    mv -f $DATADEPENDENTDIR/* $HOST_DATADEPENDENTDIR 
-    mv -f $VARIMPLICITSEQDESTDIR/* $HOST_VARIMPLICITSEQDESTDIR 
-    mv -f $DYNASEQIMPLICITDESTDIR/* $HOST_DYNASEQIMPLICITDESTDIR 
-    mv -f $IMPLICITSEQDESTDIR/* $HOST_IMPLICITSEQDESTDIR 
 else 
     docker pull $TENSORRT_IMAGE
     docker run $DOCKER_GPU_ARGS --rm --entrypoint $SRCDIR/$TRTSCRIPT \
