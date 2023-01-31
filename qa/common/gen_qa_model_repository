@@ -524,8 +524,8 @@ if [ $? -ne 0 ]; then
 fi
 if [ $(uname -m) == "aarch64" ] ; then
     bash -xe $HOST_SRCDIR/$TRTSCRIPT
-        # --mount type=bind,source=$HOST_SRCDIR,target=$SRCDIR \
-        # --mount type=bind,source=$HOST_DESTDIR,target=$DESTDIR \
+    mv -f $SRCDIR/* $HOST_SRCDIR
+    mv -f $DESTDIR/* $HOST_DESTDIR
     mv -f $VARDESTDIR/* $HOST_VARDESTDIR
     mv -f $IDENTITYDESTDIR/* $HOST_IDENTITYDESTDIR
     mv -f $IDENTITYBIGDESTDIR/* $HOST_IDENTITYBIGDESTDIR
