@@ -570,10 +570,7 @@ def pytorch_cmake_args(images):
             )
         pt_lib_path = library_paths['pytorch'] + "/lib"
         pt_include_paths = ""
-        for suffix in [
-                'include/torch', 'include/torch/torch/csrc/api/include',
-                'include/torchvision'
-        ]:
+        for suffix in ['include/torch', 'include/torchvision']:
             pt_include_paths += library_paths['pytorch'] + '/' + suffix + ';'
         cargs = [
             cmake_backend_arg('pytorch', 'TRITON_PYTORCH_INCLUDE_PATHS', None,
@@ -1096,7 +1093,8 @@ ENV TCMALLOC_RELEASE_RATE 200
     if ('fastertransformer' in backends):
         be = "fastertransformer"
         import importlib.util, requests
-        url = 'https://raw.githubusercontent.com/triton-inference-server/fastertransformer_backend/{}/docker/create_dockerfile_and_build.py'.format(backends[be])
+        url = 'https://raw.githubusercontent.com/triton-inference-server/fastertransformer_backend/{}/docker/create_dockerfile_and_build.py'.format(
+            backends[be])
         response = requests.get(url)
         spec = importlib.util.spec_from_loader('fastertransformer_buildscript',
                                                loader=None,
