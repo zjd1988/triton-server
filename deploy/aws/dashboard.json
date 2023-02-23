@@ -246,7 +246,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(nv_inference_queue_duration_us[30s]) / 1000",
+          "expr": "rate(nv_inference_queue_duration_us[30s]) / rate(nv_inference_count[30s]) / 1000",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
@@ -332,7 +332,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "rate(nv_inference_compute_duration_us[30s]) / 1000",
+          "expr": "rate(nv_inference_compute_duration_us[30s]) / rate(nv_inference_count[30s]) / 1000",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
