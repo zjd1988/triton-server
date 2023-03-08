@@ -289,24 +289,10 @@ void
 TraceManager::Trace::CaptureTimestamp(
     const std::string& name, uint64_t timestamp_ns)
 {
-  if (setting_->level_ & TRITONSERVER_TRACE_LEVEL_TIMESTAMPS) {
-    std::lock_guard<std::mutex> lk(mtx_);
-    std::stringstream* ss = nullptr;
-    {
-      if (streams_.find(trace_id_) == streams_.end()) {
-        std::unique_ptr<std::stringstream> stream(new std::stringstream());
-        ss = stream.get();
-        streams_.emplace(trace_id_, std::move(stream));
-      } else {
-        ss = streams_[trace_id_].get();
-        // If the string stream is not newly created, add "," as there is
-        // already content in the string stream
-        *ss << ",";
-      }
-    }
-    *ss << "{\"id\":" << trace_id_ << ",\"timestamps\":["
-        << "{\"name\":\"" << name << "\",\"ns\":" << timestamp_ns << "}]}";
-  }
+  LOG_TRITONSERVER_ERROR(
+      TRITONSERVER_InferenceTraceSetName(trace_, name.c_str()));
+  LOG_TRITONSERVER_ERROR(
+      TRITONSERVER_InferenenceTraceReportActivity(trace_, timestamp));
 }
 
 void
@@ -390,12 +376,13 @@ TraceManager::TraceActivity(
   }
 
   *ss << "{\"id\":" << id << ",\"timestamps\":[";
-
-  if (activity != TRITONSERVER_TRACE_CUSTOM_ACTIVITY) {
+  if (activity == TRITONSERVER_TRACE_CUSTOM_ACTIVITY) {
+    char* name = "";
+    LOG_TRITONSERVER_ERROR(TRITONSERVER_InferenceTraceName(trace, &name));
+    *ss << "{\"name\":\"" << name;
+  } else {
     *ss << "{\"name\":\""
         << TRITONSERVER_InferenceTraceActivityString(activity);
-  } else {
-    *ss << "{\"name\":\"" << tag;
   }
   *ss << "\",\"ns\":" << timestamp_ns << "}]}";
 }
