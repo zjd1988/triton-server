@@ -66,9 +66,10 @@ RUN vcpkg.exe update
 RUN vcpkg.exe install openssl:x64-windows openssl-windows:x64-windows rapidjson:x64-windows re2:x64-windows boost-interprocess:x64-windows boost-stacktrace:x64-windows zlib:x64-windows pthread:x64-windows b64:x64-windows
 RUN vcpkg.exe integrate install
 
-ARG CMAKE_VERSION=3.25.2
+ARG CMAKE_VERSION=3.26.1
 ARG CMAKE_FILE=cmake-${CMAKE_VERSION}-windows-x86_64
 WORKDIR /
+
 ADD https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${CMAKE_FILE}.zip ${CMAKE_FILE}.zip
 RUN unzip %CMAKE_FILE%.zip
 RUN move %CMAKE_FILE% CMake
