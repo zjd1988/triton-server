@@ -128,6 +128,8 @@ RUN copy "%CUDA_INSTALL_ROOT_WP%\extras\visual_studio_integration\MSBuildExtensi
 
 RUN setx PATH "%PATH%;c:\TensorRT\lib;%CUDA_INSTALL_ROOT_WP%\bin"
 
+RUN git config --global http.schannelCheckRevoke false
+
 # It is important that the entrypoint initialize VisualStudio
 # environment otherwise the build will fail. Also set
 # CMAKE_TOOLCHAIN_FILE and VCPKG_TARGET_TRIPLET so
