@@ -148,6 +148,7 @@ RUN copy cudnn\include\cudnn*.h "%CUDA_INSTALL_ROOT_WP%\include\."
 
 ENV CUDNN_VERSION ${CUDNN_VERSION}
 
+LABEL CUDNN_VERSION="${CUDNN_VERSION}"
 # It is important that the entrypoint initialize VisualStudio
 # environment otherwise the build will fail. Also set
 # CMAKE_TOOLCHAIN_FILE and VCPKG_TARGET_TRIPLET so
