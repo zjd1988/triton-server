@@ -43,8 +43,8 @@ RUN choco install git docker unzip -y
 # vsdevcmd.bat (see https://bugs.python.org/issue38989)
 ARG PYTHON_VERSION=3.8.10
 ARG PYTHON_SOURCE=https://www.python.org/ftp/python/${PYTHON_VERSION}/python-${PYTHON_VERSION}-amd64.exe
-ADD ${PYTHON_SOURCE} python-setup-amd64.exe
-RUN python-setup-amd64.exe /quiet InstallAllUsers=1 PrependPath=1 Include_doc=0
+ADD ${PYTHON_SOURCE} python-${PYTHON_VERSION}-amd64.exe
+RUN python-%PYTHON_VERSION%-amd64.exe /quiet InstallAllUsers=1 PrependPath=1 Include_doc=0
 RUN pip install --upgrade wheel setuptools docker
 RUN pip install grpcio-tools
 
@@ -71,7 +71,7 @@ WORKDIR /
 # Installing Vcpkg
 #
 ARG VCPGK_VERSION=2023.02.24
-RUN git clone --single-branch --depth=1 -b ${VCPGK_VERSION} https://github.com/microsoft/vcpkg.git
+RUN git clone --single-branch --depth=1 -b %VCPGK_VERSION% https://github.com/microsoft/vcpkg.git
 WORKDIR /vcpkg
 RUN bootstrap-vcpkg.bat
 RUN vcpkg.exe update
