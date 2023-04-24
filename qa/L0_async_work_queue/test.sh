@@ -29,7 +29,7 @@ TEST_LOG="./async_work_queue.log"
 ASYNC_WORK_QUEUE_TEST=./async_work_queue_test
 
 RET=0
-
+echo -e "\033[32m THIS IS FOR DEMO PURPOSE\033[0m"
 export CUDA_VISIBLE_DEVICES=0
 
 rm -f TEST_LOG
