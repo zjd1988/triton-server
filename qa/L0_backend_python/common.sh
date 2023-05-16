@@ -1,4 +1,4 @@
-# Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+# Copyright 2021-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@ get_shm_pages() {
 
 install_conda() {
   rm -rf ./miniconda
-  file_name="Miniconda3-py38_4.9.2-Linux-x86_64.sh"
+  file_name="Miniconda3-py310_23.3.1-0-Linux-x86_64.sh"
   wget https://repo.anaconda.com/miniconda/$file_name
 
   # install miniconda in silent mode
@@ -46,10 +46,10 @@ install_build_deps() {
   wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | \
   	gpg --dearmor - |  \
   	tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
-  	apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main' && \
+  	apt-add-repository --yes 'deb https://apt.kitware.com/ubuntu/ jammy main' && \
   	apt-get update && \
   	apt-get install -y --no-install-recommends \
-  	cmake-data=3.18.4-0kitware1ubuntu20.04.1 cmake=3.18.4-0kitware1ubuntu20.04.1
+  	cmake-data=3.26.3-0kitware1ubuntu22.04.1 cmake=3.26.3-0kitware1ubuntu22.04.1 
 }
 
 create_conda_env() {
@@ -57,7 +57,7 @@ create_conda_env() {
   env_name=$2
   conda create -n $env_name python=$python_version -y
   conda activate $env_name
-  conda install conda-pack -y
+  conda install -c conda-forge conda-pack -y
 }
 
 create_python_backend_stub() {
