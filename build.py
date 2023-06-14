@@ -67,7 +67,6 @@ from inspect import getsourcefile
 # incorrectly load the other version of the openvino libraries.
 #
 TRITON_VERSION_MAP = {
-
     '2.35.0': (
         '23.06',  # triton container
         '23.06',  # upstream container
@@ -1215,21 +1214,19 @@ COPY --from=min_container /usr/local/cuda-12.1/targets/{cuda_arch}-linux/lib/lib
 COPY --from=min_container /usr/local/cuda-12.1/targets/{cuda_arch}-linux/lib/libnvToolsExt.so.1 /usr/local/cuda/targets/{cuda_arch}-linux/lib/.
 COPY --from=min_container /usr/local/cuda-12.1/targets/{cuda_arch}-linux/lib/libnvJitLink.so.12 /usr/local/cuda/targets/{cuda_arch}-linux/lib/.
 
-RUN mkdir -p /opt/hpcx/ucc/lib/ /opt/hpcx/ucx/lib/
-COPY --from=min_container /opt/hpcx/ucc/lib/libucc.so.1 /opt/hpcx/ucc/lib/libucc.so.1
-COPY --from=min_container /opt/hpcx/ucx/lib/libucm.so.0 /opt/hpcx/ucx/lib/libucm.so.0
-COPY --from=min_container /opt/hpcx/ucx/lib/libucp.so.0 /opt/hpcx/ucx/lib/libucp.so.0
-COPY --from=min_container /opt/hpcx/ucx/lib/libucs.so.0 /opt/hpcx/ucx/lib/libucs.so.0
-COPY --from=min_container /opt/hpcx/ucx/lib/libuct.so.0 /opt/hpcx/ucx/lib/libuct.so.0
-
 COPY --from=min_container /usr/lib/{libs_arch}-linux-gnu/libcudnn.so.8 /usr/lib/{libs_arch}-linux-gnu/libcudnn.so.8
 
 # patchelf is needed to add deps of libcublasLt.so.12 to libtorch_cuda.so
 RUN apt-get update && \
-        apt-get install -y --no-install-recommends openmpi-bin patchelf
+        apt-get install -y --no-install-recommends patchelf
 
 ENV LD_LIBRARY_PATH /usr/local/cuda/targets/{cuda_arch}-linux/lib:/usr/local/cuda/lib64/stubs:${{LD_LIBRARY_PATH}}
 '''.format(cuda_arch=cuda_arch, libs_arch=libs_arch)
+
+            if not gpu_enabled:'''
+RUN mkdir -p /opt/hpcx/ /opt/hpcx/
+COPY --from=min_container /opt/hpcx/* /opt/hpcx/
+'''
 
         if ('pytorch' in backends) or ('tensorflow' in backends):
             # Add NCCL dependency for tensorflow/pytorch backend.
