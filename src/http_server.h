@@ -207,8 +207,6 @@ class HTTPAPIServer : public HTTPServer {
     virtual void SetResponseHeader(
         const bool has_binary_data, const size_t header_length);
 
-    uint32_t IncrementResponseCount();
-
 #ifdef TRITON_ENABLE_TRACING
     std::shared_ptr<TraceManager::Trace> trace_;
 #endif  // TRITON_ENABLE_TRACING
@@ -220,15 +218,16 @@ class HTTPAPIServer : public HTTPServer {
     // lifetime of the request.
     std::list<std::vector<char>> serialized_data_;
 
-   protected:
-    TRITONSERVER_Server* server_;
-    evhtp_request_t* req_;
-    evthr_t* thread_;
-
-    DataCompressor::Type response_compression_type_;
-
     // Counter to keep track of number of responses generated.
-    std::atomic<uint32_t> response_count_;
+    std::atomic<uint32_t> response_count_{0};
+
+   protected:
+    TRITONSERVER_Server* server_{nullptr};
+    evhtp_request_t* req_{nullptr};
+    evthr_t* thread_{nullptr};
+
+    DataCompressor::Type response_compression_type_{
+        DataCompressor::Type::IDENTITY};
   };
 
  protected:
