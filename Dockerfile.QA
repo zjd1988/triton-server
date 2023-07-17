@@ -336,8 +336,9 @@ RUN rm -f /usr/bin/python && \
     ln -s /usr/bin/python3 /usr/bin/python
 
 RUN pip3 install --upgrade wheel setuptools && \
-    pip3 install --upgrade numpy pillow attrdict future grpcio requests gsutil \
-                           awscli six grpcio-channelz prettytable virtualenv
+    pip3 install --upgrade numpy pillow attrdict future grpcio==1.54.0 requests \
+                           gsutil awscli six grpcio-channelz==1.54.0 prettytable \
+                           virtualenv
 
 # go needed for example go client test.
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
@@ -352,7 +353,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
 ENV GOPATH /root/go
 ENV PATH $PATH:/usr/local/go/bin:$GOPATH/bin
 RUN GO111MODULE=off go get github.com/golang/protobuf/protoc-gen-go && \
-    GO111MODULE=off go get google.golang.org/grpc
+    GO111MODULE=off go get google.golang.org/grpc@v1.54.0
 
 # CI expects tests in /opt/tritonserver/qa. The triton-server (1000)
 # user should own all artifacts in case CI is run using triton-server
