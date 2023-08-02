@@ -27,8 +27,8 @@
 FASTERTRANSFORMER_BRANCH_TAG=${FASTERTRANSFORMER_BRANCH_TAG:="main"}
 FASTERTRANSFORMER_BRANCH=${FASTERTRANSFORMER_BRANCH:="https://github.com/triton-inference-server/fastertransformer_backend.git"}
 SERVER_TIMEOUT=600
-SERVER_LOG="$PWD/inference_server"
-CLIENT_LOG="$PWD/client"
+SERVER_LOG="$PWD/server.log"
+CLIENT_LOG="$PWD/client.log"
 
 MODEL_DIR=${MODEL_DIR:=$PWD/fastertransformer_backend/all_models/t5/}
 TRITON_DIR=${TRITON_DIR:="/opt/tritonserver"}
