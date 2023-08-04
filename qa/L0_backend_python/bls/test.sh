@@ -180,6 +180,11 @@ for TRIAL in non_decoupled decoupled ; do
     wait $SERVER_PID
 done
 
+if [ $RET -eq 1 ]; then
+    cat $CLIENT_LOG
+    cat $SERVER_LOG
+fi
+
 # Test error handling when BLS is used in "initialize" or "finalize" function
 ERROR_MESSAGE="BLS is only supported during the 'execute' function."
 
