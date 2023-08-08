@@ -575,6 +575,8 @@ def backend_cmake_args(images, components, be, install_dir, library_paths):
         args = fastertransformer_cmake_args()
     elif be == 'tensorrt':
         args = tensorrt_cmake_args()
+    elif be == 'gie':
+        args = gie_cmake_args()
     else:
         args = []
 
@@ -758,6 +760,16 @@ def tensorrt_cmake_args():
 
     return cargs
 
+def gie_cmake_args():
+    cargs = [
+        cmake_backend_enable('gie', 'BUILD_TRITON_GIE_BACKEND',
+                             FLAGS.enable_triton_gie_backend),
+    ]
+    cargs.append(
+        cmake_backend_enable('gie', 'CUDA_ENABLED',
+                             FLAGS.enable_cuda))
+    return cargs
+
 
 def tensorflow_cmake_args(images, library_paths):
     backend_name = "tensorflow"
@@ -836,7 +848,7 @@ def install_dcgm_libraries(dcgm_version, target_machine):
             return '''
 ENV DCGM_VERSION {}
 # Install DCGM. Steps from https://developer.nvidia.com/dcgm#Downloads
-RUN curl -o /tmp/cuda-keyring.deb \
+RUN wget -O /tmp/cuda-keyring.deb \
     https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/sbsa/cuda-keyring_1.0-1_all.deb \
     && apt install /tmp/cuda-keyring.deb && rm /tmp/cuda-keyring.deb && \
     apt-get update && apt-get install -y datacenter-gpu-manager=1:{}
@@ -845,7 +857,7 @@ RUN curl -o /tmp/cuda-keyring.deb \
             return '''
 ENV DCGM_VERSION {}
 # Install DCGM. Steps from https://developer.nvidia.com/dcgm#Downloads
-RUN curl -o /tmp/cuda-keyring.deb \
+RUN wget -O /tmp/cuda-keyring.deb \
     https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb \
     && apt install /tmp/cuda-keyring.deb && rm /tmp/cuda-keyring.deb && \
     apt-get update && apt-get install -y datacenter-gpu-manager=1:{}
@@ -938,7 +950,13 @@ RUN apt-get update && \
             zlib1g-dev \
             libarchive-dev \
             libxml2-dev \ 
-            libnuma-dev && \
+            libnuma-dev \
+            libcrypto++8 \
+            libcrypto++-dev \
+            libcrypto++-utils \
+            libyaml-cpp-dev \
+            libopencv-dev \
+            python3-opencv && \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --upgrade pip && \
@@ -947,7 +965,7 @@ RUN pip3 install --upgrade pip && \
 # Install boost version >= 1.78 for boost::span
 # Current libboost-dev apt packages are < 1.78, so install from tar.gz
 RUN wget -O /tmp/boost.tar.gz \
-        https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz && \
+        https://jaist.dl.sourceforge.net/project/boost/boost/1.80.0/boost_1_80_0.tar.gz && \
     (cd /tmp && tar xzf boost.tar.gz) && \
     mv /tmp/boost_1_80_0/boost /usr/include/boost
 
@@ -1524,6 +1542,145 @@ def create_docker_build_script(script_name, container_install_dir,
         docker_script.cwd(THIS_SCRIPT_DIR)
         docker_script.cmd(cibaseargs, check_exitcode=True)
 
+def create_gie_docker_build_script(script_build_dir, script_name, container_install_dir,
+                               container_ci_dir):
+    with BuildScript(
+            os.path.join(FLAGS.build_dir, script_name),
+            verbose=FLAGS.verbose,
+            desc=('Docker-based build script for Triton Inference Server'
+                 )) as docker_script:
+
+        #
+        # Build base image... tritonserver_buildbase
+        #
+        docker_script.commentln(8)
+        docker_script.comment('Create Triton base build image')
+        docker_script.comment(
+            'This image contains all dependencies necessary to build Triton')
+        docker_script.comment()
+
+        cachefrommap = [
+            'tritonserver_buildbase', 'tritonserver_buildbase_cache0',
+            'tritonserver_buildbase_cache1'
+        ]
+
+        baseargs = [
+            'docker', 'build', '-t', 'tritonserver_buildbase', '-f',
+            os.path.join(FLAGS.build_dir, 'Dockerfile.buildbase')
+        ]
+
+        if not FLAGS.no_container_pull:
+            baseargs += [
+                '--pull',
+            ]
+
+        # Windows docker runs in a VM and memory needs to be specified
+        # explicitly (at least for some configurations of docker).
+        if target_platform() == 'windows':
+            if FLAGS.container_memory:
+                baseargs += ['--memory', FLAGS.container_memory]
+
+        baseargs += ['--cache-from={}'.format(k) for k in cachefrommap]
+        baseargs += ['.']
+
+        docker_script.cwd(THIS_SCRIPT_DIR)
+        docker_script.cmd(baseargs, check_exitcode=True)
+
+        #
+        # Build...
+        #
+        docker_script.blankln()
+        docker_script.commentln(8)
+        docker_script.comment('Run build in tritonserver_buildbase container')
+        docker_script.comment(
+            'Mount a directory into the container where the install')
+        docker_script.comment('artifacts will be placed.')
+        docker_script.comment()
+
+        docker_script.mkdir(script_build_dir)
+        # Don't use '-v' to communicate the built artifacts out of the
+        # build, because we want this code to work even if run within
+        # Docker (i.e. docker-in-docker) and not just if run directly
+        # from host.
+        runargs = [
+            'docker', 'run', '-w', '/workspace/build', '--name',
+            'tritonserver_builder'
+        ]
+
+        if not FLAGS.no_container_interactive:
+            runargs += ['-it']
+
+        if target_platform() == 'windows':
+            if FLAGS.container_memory:
+                runargs += ['--memory', FLAGS.container_memory]
+            runargs += [
+                '-v', '\\\\.\pipe\docker_engine:\\\\.\pipe\docker_engine'
+            ]
+        else:
+            runargs += ['-v', '/var/run/docker.sock:/var/run/docker.sock']
+            runargs += ['-v', '{}:{}'.format(os.path.join(FLAGS.build_dir, 'gie'), os.path.join(script_build_dir, 'gie'))]
+
+        runargs += ['tritonserver_buildbase']
+
+        if target_platform() == 'windows':
+            runargs += [
+                'powershell.exe', '-noexit', '-File', './cmake_build.ps1'
+            ]
+        else:
+            runargs += ['./cmake_build']
+
+        # Remove existing tritonserver_builder container...
+        if target_platform() == 'windows':
+            docker_script.cmd(['docker', 'rm', 'tritonserver_builder'])
+        else:
+            docker_script._file.write(
+                'if [ "$(docker ps -a | grep tritonserver_builder)" ]; then  docker rm tritonserver_builder; fi\n'
+            )
+
+        docker_script.cmd(runargs, check_exitcode=True)
+
+        docker_script.cmd([
+            'docker', 'cp', 'tritonserver_builder:/tmp/tritonbuild/install',
+            FLAGS.build_dir
+        ],
+                          check_exitcode=True)
+        docker_script.cmd([
+            'docker', 'cp', 'tritonserver_builder:/tmp/tritonbuild/ci',
+            FLAGS.build_dir
+        ],
+                          check_exitcode=True)
+
+        #
+        # Final image... tritonserver
+        #
+        docker_script.blankln()
+        docker_script.commentln(8)
+        docker_script.comment('Create final tritonserver image')
+        docker_script.comment()
+
+        finalargs = [
+            'docker', 'build', '-t', 'tritonserver', '-f',
+            os.path.join(FLAGS.build_dir, 'Dockerfile'), '.'
+        ]
+
+        docker_script.cwd(THIS_SCRIPT_DIR)
+        docker_script.cmd(finalargs, check_exitcode=True)
+
+        #
+        # CI base image... tritonserver_cibase
+        #
+        docker_script.blankln()
+        docker_script.commentln(8)
+        docker_script.comment('Create CI base image')
+        docker_script.comment()
+
+        cibaseargs = [
+            'docker', 'build', '-t', 'tritonserver_cibase', '-f',
+            os.path.join(FLAGS.build_dir, 'Dockerfile.cibase'), '.'
+        ]
+
+        docker_script.cwd(THIS_SCRIPT_DIR)
+        docker_script.cmd(cibaseargs, check_exitcode=True)
 
 def core_build(cmake_script, repo_dir, cmake_dir, build_dir, install_dir,
                components, backends):
@@ -1615,6 +1772,32 @@ def backend_build(be, cmake_script, tag, build_dir, install_dir,
     cmake_script.commentln(8)
     cmake_script.blankln()
 
+def gie_backend_build(be, cmake_script, build_dir, install_dir,
+                  images, components, library_paths):
+    repo_build_dir = os.path.join(build_dir, be, 'build')
+    repo_install_dir = os.path.join(build_dir, be, 'install')
+
+    cmake_script.commentln(8)
+    cmake_script.comment(f'\'{be}\' backend')
+    cmake_script.comment('Delete this section to remove backend from build')
+    cmake_script.comment()
+
+    cmake_script.mkdir(repo_build_dir)
+    cmake_script.cwd(repo_build_dir)
+    cmake_script.cmake(
+        backend_cmake_args(images, components, be, repo_install_dir,
+                           library_paths))
+    cmake_script.makeinstall()
+
+    cmake_script.mkdir(os.path.join(install_dir, 'backends'))
+    cmake_script.rmdir(os.path.join(install_dir, 'backends', be))
+    cmake_script.cpdir(os.path.join(repo_install_dir, 'backends', be),
+                       os.path.join(install_dir, 'backends'))
+
+    cmake_script.comment()
+    cmake_script.comment(f'end \'{be}\' backend')
+    cmake_script.commentln(8)
+    cmake_script.blankln()
 
 def repo_agent_build(ra, cmake_script, build_dir, install_dir, repoagent_repo,
                      repoagents):
@@ -1797,7 +1980,7 @@ def enable_all():
     else:
         all_backends = [
             'ensemble', 'identity', 'square', 'repeat', 'onnxruntime',
-            'openvino', 'tensorrt'
+            'openvino', 'tensorrt', 'gie'
         ]
         all_repoagents = ['checksum']
         all_caches = ['local', 'redis']
@@ -2135,6 +2318,18 @@ if __name__ == '__main__':
         help=
         'Override specified backend CMake argument in the build as <backend>:<name>=<value>. The argument is passed to CMake as -D<name>=<value>. This flag only impacts CMake arguments that are used by build.py. To unconditionally add a CMake argument to the backend build use --extra-backend-cmake-arg.'
     )
+    parser.add_argument(
+        '--enable-triton-gie-backend',
+        action="store_true",
+        default=False,
+        help='enable triton gie backend support.'
+    )
+    parser.add_argument(
+        '--enable-cuda',
+        action="store_true",
+        default=False,
+        help='enable cuda support.'
+    )
 
     FLAGS = parser.parse_args()
 
@@ -2434,10 +2629,13 @@ if __name__ == '__main__':
                 github_organization = 'https://gitlab.com/arm-research/smarter/'
             else:
                 github_organization = FLAGS.github_organization
-
-            backend_build(be, cmake_script, backends[be], script_build_dir,
-                          script_install_dir, github_organization, images,
-                          components, library_paths)
+            if 'gie' == be:
+                gie_backend_build(be, cmake_script, script_build_dir, script_install_dir, 
+                                  images, components, library_paths)
+            else:
+                backend_build(be, cmake_script, backends[be], script_build_dir,
+                            script_install_dir, github_organization, images,
+                            components, library_paths)
 
         # Commands to build each repo agent...
         for ra in repoagents:
@@ -2476,7 +2674,11 @@ if __name__ == '__main__':
 
         create_build_dockerfiles(script_build_dir, images, backends, repoagents,
                                  caches, FLAGS.endpoint)
-        create_docker_build_script(script_name, script_install_dir,
+        if 'gie' in backends:
+            create_gie_docker_build_script(script_build_dir, script_name, script_install_dir,
+                                   script_ci_dir)
+        else:
+            create_docker_build_script(script_name, script_install_dir,
                                    script_ci_dir)
 
     # In not dry-run, execute the script to perform the build...  If a
