@@ -35,6 +35,7 @@ import stat
 import subprocess
 import sys
 from inspect import getsourcefile
+import glob
 
 #
 # Build Triton Inference Server.
@@ -768,6 +769,33 @@ def gie_cmake_args():
     cargs.append(
         cmake_backend_enable('gie', 'CUDA_ENABLED',
                              FLAGS.enable_cuda))
+    cargs.append(
+        cmake_backend_enable('gie', 'MNN_ENABLED',
+                             FLAGS.enable_mnn))
+    cargs.append(
+        cmake_backend_enable('gie', 'NCNN_ENABLED',
+                             FLAGS.enable_ncnn))
+    cargs.append(
+        cmake_backend_enable('gie', 'OPENCV_DNN_ENABLED',
+                             FLAGS.enable_opencv_dnn))
+    cargs.append(
+        cmake_backend_enable('gie', 'TENSORRT_ENABLED',
+                             FLAGS.enable_tensorrt))
+    cargs.append(
+        cmake_backend_enable('gie', 'TORCH_ENABLED',
+                             FLAGS.enable_torch))
+    cargs.append(
+        cmake_backend_enable('gie', 'ONNXRUNTIME_ENABLED',
+                             FLAGS.enable_onnxruntime))
+    cargs.append(
+        cmake_backend_enable('gie', 'RKNPU_ENABLED',
+                             FLAGS.enable_rknpu))
+    cargs.append(
+        cmake_backend_enable('gie', 'RKNPU2_ENABLED',
+                             FLAGS.enable_rknpu2))
+    cargs.append(
+        cmake_backend_enable('gie', 'BUILD_PYBIND_MODULE',
+                             FLAGS.enable_pybind))
     return cargs
 
 
@@ -1128,7 +1156,11 @@ ENV LD_LIBRARY_PATH /opt/tritonserver/backends/onnxruntime:${LD_LIBRARY_PATH}
         df += '''
 ENV LD_LIBRARY_PATH /opt/hpcx/ucc/lib/:/opt/hpcx/ucx/lib/:${LD_LIBRARY_PATH}
 '''
-
+    # onnxruntime is need by gie backend
+    if 'gie' in backends:
+        df += '''
+ENV LD_LIBRARY_PATH /opt/tritonserver/backends/gie:${LD_LIBRARY_PATH}
+'''
     backend_dependencies = ""
     # libgomp1 is needed by both onnxruntime and pytorch backends
     if ('onnxruntime' in backends) or ('pytorch' in backends):
@@ -1177,6 +1209,12 @@ RUN apt-get update && \
             libnuma-dev \
             curl \
             libjemalloc-dev \
+            libcrypto++8 \
+            libcrypto++-dev \
+            libcrypto++-utils \
+            libyaml-cpp-dev \
+            libopencv-dev \
+            python3-opencv \
             {backend_dependencies} && \
     rm -rf /var/lib/apt/lists/*
 
@@ -1597,7 +1635,7 @@ def create_gie_docker_build_script(script_build_dir, script_name, container_inst
         docker_script.comment('artifacts will be placed.')
         docker_script.comment()
 
-        docker_script.mkdir(script_build_dir)
+        # docker_script.mkdir(script_build_dir)
         # Don't use '-v' to communicate the built artifacts out of the
         # build, because we want this code to work even if run within
         # Docker (i.e. docker-in-docker) and not just if run directly
@@ -1618,7 +1656,7 @@ def create_gie_docker_build_script(script_build_dir, script_name, container_inst
             ]
         else:
             runargs += ['-v', '/var/run/docker.sock:/var/run/docker.sock']
-            runargs += ['-v', '{}:{}'.format(os.path.join(FLAGS.build_dir, 'gie'), os.path.join(script_build_dir, 'gie'))]
+            # runargs += ['-v', '{}:{}'.format(os.path.join(FLAGS.build_dir, 'gie'), os.path.join(script_build_dir, 'gie'))]
 
         runargs += ['tritonserver_buildbase']
 
@@ -1772,6 +1810,25 @@ def backend_build(be, cmake_script, tag, build_dir, install_dir,
     cmake_script.commentln(8)
     cmake_script.blankln()
 
+def search_library_files(lib_path):
+    lib_files = []
+    if not os.path.exists(lib_path):
+        log('{} not exists'.format(lib_path))
+        return lib_files
+    if target_platform() == 'windows':
+        lib_files += glob.glob(r'{}'.format(os.path.join(lib_path, '*.dll')))
+        lib_files = [file.strip().split('\\')[-1] for file in lib_files]
+    else:
+        lib_files += glob.glob(r'{}'.format(os.path.join(lib_path, '*.so*')))
+        lib_files = [file.strip().split('/')[-1] for file in lib_files]
+    return lib_files
+
+def paste_library_files(cmake_script, repo_3rdparty_dir, backend_str, target_arch, install_dir, be):
+    lib_dir = os.path.join(repo_3rdparty_dir, backend_str, target_arch, 'lib')
+    lib_list = search_library_files(os.path.join(THIS_SCRIPT_DIR, 'build', be, 'source', '3rd_party', backend_str, target_arch, 'lib'))
+    for lib_file in lib_list:
+        cmake_script.cp(os.path.join(lib_dir, lib_file), os.path.join(install_dir, 'backends', be))
+
 def gie_backend_build(be, cmake_script, build_dir, install_dir,
                   images, components, library_paths):
     repo_build_dir = os.path.join(build_dir, be, 'build')
@@ -1781,6 +1838,12 @@ def gie_backend_build(be, cmake_script, build_dir, install_dir,
     cmake_script.comment(f'\'{be}\' backend')
     cmake_script.comment('Delete this section to remove backend from build')
     cmake_script.comment()
+
+    cmake_script.mkdir(build_dir)
+    cmake_script.cwd(build_dir)
+    cmake_script.rmdir(os.path.join(build_dir, be))
+    cmake_script.cpdir(os.path.join('/workspace/build', be),
+                       os.path.join(build_dir, be))
 
     cmake_script.mkdir(repo_build_dir)
     cmake_script.cwd(repo_build_dir)
@@ -1793,6 +1856,27 @@ def gie_backend_build(be, cmake_script, build_dir, install_dir,
     cmake_script.rmdir(os.path.join(install_dir, 'backends', be))
     cmake_script.cpdir(os.path.join(repo_install_dir, 'backends', be),
                        os.path.join(install_dir, 'backends'))
+    repo_3rdparty_dir = os.path.join(build_dir, be, 'source', '3rd_party')
+    target_arch = "x64" if target_machine() == "x86_64" else target_machine()
+    backend_str = None
+    if FLAGS.enable_mnn:
+        backend_str = "mnn"
+        paste_library_files(cmake_script, repo_3rdparty_dir, backend_str, target_arch, install_dir, be)
+    if FLAGS.enable_ncnn:
+        backend_str = "ncnn"
+        paste_library_files(cmake_script, repo_3rdparty_dir, backend_str, target_arch, install_dir, be)
+    if FLAGS.enable_torch:
+        backend_str = "torch"
+        paste_library_files(cmake_script, repo_3rdparty_dir, backend_str, target_arch, install_dir, be)
+    if FLAGS.enable_onnxruntime:
+        backend_str = "onnxruntime"
+        paste_library_files(cmake_script, repo_3rdparty_dir, backend_str, target_arch, install_dir, be)
+    if FLAGS.enable_rknpu:
+        backend_str = "rknpu"
+        paste_library_files(cmake_script, repo_3rdparty_dir, backend_str, target_arch, install_dir, be)
+    if FLAGS.enable_rknpu2:
+        backend_str = "rknpu2"
+        paste_library_files(cmake_script, repo_3rdparty_dir, backend_str, target_arch, install_dir, be)
 
     cmake_script.comment()
     cmake_script.comment(f'end \'{be}\' backend')
@@ -1962,7 +2046,7 @@ def enable_all():
         all_backends = [
             'ensemble', 'identity', 'square', 'repeat', 'tensorflow',
             'onnxruntime', 'python', 'dali', 'pytorch', 'openvino', 'fil',
-            'tensorrt'
+            'tensorrt', 'gie'
         ]
         all_repoagents = ['checksum']
         all_caches = ['local', 'redis']
@@ -2329,6 +2413,60 @@ if __name__ == '__main__':
         action="store_true",
         default=False,
         help='enable cuda support.'
+    )
+    parser.add_argument(
+        '--enable-mnn',
+        action="store_true",
+        default=False,
+        help='enable mnn engine support for triton gie backend.'
+    )
+    parser.add_argument(
+        '--enable-ncnn',
+        action="store_true",
+        default=False,
+        help='enable ncnn engine support for triton gie backend.'
+    )
+    parser.add_argument(
+        '--enable-opencv-dnn',
+        action="store_true",
+        default=False,
+        help='enable opencv dnn engine support for triton gie backend.'
+    )
+    parser.add_argument(
+        '--enable-tensorrt',
+        action="store_true",
+        default=False,
+        help='enable tensorrt engine support for triton gie backend.'
+    )
+    parser.add_argument(
+        '--enable-torch',
+        action="store_true",
+        default=False,
+        help='enable torch engine support for triton gie backend.'
+    )
+    parser.add_argument(
+        '--enable-onnxruntime',
+        action="store_true",
+        default=False,
+        help='enable onnxruntime engine support for triton gie backend.'
+    )
+    parser.add_argument(
+        '--enable-rknpu',
+        action="store_true",
+        default=False,
+        help='enable rknpu engine support for triton gie backend.'
+    )
+    parser.add_argument(
+        '--enable-rknpu2',
+        action="store_true",
+        default=False,
+        help='enable rknpu2 engine support for triton gie backend.'
+    )
+    parser.add_argument(
+        '--enable-pybind',
+        action="store_true",
+        default=False,
+        help='enable pybind for triton gie backend.'
     )
 
     FLAGS = parser.parse_args()
